@@ -23,17 +23,15 @@ function intervalFunc()
         if (err) {
             console.log(err);
         }
-        else {
-            console.log(res.body);
-        }
+//        else {
+//            console.log(res.body);
+//        }
     })
 }
 
 function sendChunkGuidToMasterFn()
 {
-    console.log("-----------------------");
- //   setInterval(intervalFunc, config.randomGuidTime);
-    intervalFunc();
+    setInterval(intervalFunc, config.randomGuidTime);
 }
 
 function getMasterFn(){

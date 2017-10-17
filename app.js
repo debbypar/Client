@@ -1,12 +1,12 @@
 var express = require('express');
 var path = require('path');
-var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var config = require('./config/config');
 
 var request = require('request');
+var ip = require('ip');
 
 /*
 var index = require('./routes/index');
@@ -59,9 +59,9 @@ module.exports = app;
 
 app.listen(config.port, config.ip, function() {
     // print a message when the server starts listening
-    console.log("server starting on " + config.ip + ':' + config.port); // + " IP: " + ip.address
+    console.log("server starting on " + config.ip + ':' + config.port + " IP: " + ip.address());
 });
 
 clientController.getMaster();
-setInterval(clientController.sendChunkGuidToMaster, config.randomGuidTime);
+clientController.sendChunkGuidToMaster();
 
