@@ -26,6 +26,7 @@ function intervalFunc()
 //        else {
 //            console.log(res.body);
 //        }
+//        res.send({status: 'ACK'});
     })
 }
 
