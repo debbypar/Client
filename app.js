@@ -21,6 +21,8 @@ var port = process.env.PORT || 6603;
 
 
 var clientController = require('./controllers/clientController');
+var writeFileController = require('./controllers/writeFileController');
+var profile = require('./model/profile');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -62,6 +64,9 @@ app.listen(config.port, config.ip, function() {
     console.log("server starting on " + config.ip + ':' + config.port + " IP: " + ip.address());
 });
 
-clientController.getMaster();
-clientController.sendChunkGuidToMaster();
+clientController.createProfile("Root", "root");
 
+clientController.getMaster();
+
+writeFileController.getRandomFileFromDir('./Files/');
+clientController.sendChunkGuidToMaster();

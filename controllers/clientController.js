@@ -2,11 +2,14 @@ var request = require('request');
 
 exports.sendChunkGuidToMaster = sendChunkGuidToMasterFn;
 exports.getMaster = getMasterFn;
+exports.createProfile = createProfileFn;
 
-var client = require('../model/client');
+
 var config = require('../config/config');
 var master = require('../model/masterServer');
 var syncRequest = require('sync-request');
+var ip = require('ip');
+var profile = require('../model/profile');
 
 function intervalFunc()
 {
@@ -15,7 +18,8 @@ function intervalFunc()
         method: 'POST',
         json: {
             type: "CHUNK",
-            guid: client.guidGenerator()
+            guid: client.guidGenerator(),
+            myIp: ip.address()
         }
     };
     request(obj, function (err, res) {
@@ -43,4 +47,9 @@ function getMasterFn(){
 
     var res = syncRequest('GET', obj.url);
     master.setMasterServerIp(res.getBody('utf8'));  // utf8 convert body from buffer to string
+}
+
+function createProfileFn(username, password) {
+    profile.setProfileUsername(username);
+    profile.setProfilePassword(password);
 }
