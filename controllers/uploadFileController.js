@@ -18,6 +18,7 @@ exports.removeFile = removeFileFn;
 exports.createFile =removeFileFn;
 exports.getFilesDataFromDir = getFilesDataFromDirFn;
 exports.getRandomFileFromDir = getRandomFileFromDirFn;
+exports.startUploadReq = startUploadReqFn;
 
 /**
  * Remove a file
@@ -129,3 +130,25 @@ function getRandomFileFromDirFn(startPath) {
 
 //removeFile('../Files/provaFile', "newFile.txt");
 //getRandomFileFromDirFn('../Files/');
+
+function startUploadReqFn(chosenFileData) {
+    var obj = {
+        url: 'http://' + master.getMasterServerIp() + ':6601/api/master/newFileData',
+        method: 'POST',
+        json: {
+            type: "METADATA",
+            fileName: chosenFileData.name,
+            extension: chosenFileData.extension,
+            dimension: chosenFileData.dimension,
+            idClient: chosenFileData.idClient
+//            myIp: ip.address()
+        }
+    };
+
+    request(obj, function (err, res) {
+        console.log("file "+obj.json.fileName+obj.json.extension+", inviati metadati da utente " + obj.json.idClient);
+        if (err) {
+            console.log(err);
+        }
+    });
+}
