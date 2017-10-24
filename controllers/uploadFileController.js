@@ -10,6 +10,8 @@ var FormData = require('form-data');
 var path = require('path');
 var fs = require('fs');
 var extfs = require('extfs');
+var util = require("util");
+var resolve = require('path').resolve;
 
 
 exports.removeFile = removeFileFn;
@@ -74,6 +76,8 @@ function getFilesDataFromDirFn(startPath) {
     if(empty)
         createFileFn(startPath, "newFile.txt", "A new test file has been created.");
 
+    var stats = fs.statSync(startPath);
+    var mtime = new Date(util.inspect(stats.mtime));
 
     files = fs.readdirSync(startPath);
 
@@ -84,9 +88,11 @@ function getFilesDataFromDirFn(startPath) {
             fileData.push({
                 startPath: startPath,
                 name: files[i],
+                absPath:resolve(startPath)+'/'+files[i],
                 extension: path.extname(files[i]),
-                dimension: fileSizeInBytes,
-                idClient: profile.getProfileUsername()
+                sizeFile: fileSizeInBytes,
+                idClient: profile.getProfileUsername(),
+                lastModified: mtime
             });
         }
     }
@@ -142,9 +148,11 @@ function startUploadReqFn(chosenFileData) {
         json: {
             type: "METADATA",
             fileName: chosenFileData.name,
+            absPath: chosenFileData.absPath,
             extension: chosenFileData.extension,
-            dimension: chosenFileData.dimension,
-            idClient: chosenFileData.idClient
+            sizeFile: chosenFileData.sizeFile,
+            idClient: chosenFileData.idClient,
+            lastModified: chosenFileData.lastModified
         }
     };
 
@@ -185,7 +193,7 @@ function startUploadReqFn(chosenFileData) {
 function getFileAndStartUploadFn(startPath) {
     var fileData = getRandomFileFromDirFn(startPath);
     startUploadReqFn(fileData);
-    console.log("Filedata: "+fileData)
+    console.log("Filedata: "+fileData);
 }
 
 function getFilesAndUploadFn(startPath) {
