@@ -1,24 +1,25 @@
 var request = require('request');
 
-var client = require('../model/client');
 var profile = require('../model/profile');
 var config = require('../config/config');
 var master = require('../model/masterServer');
-var syncRequest = require('sync-request');
-var ip = require('ip');
 
-//E' la funzione che inizia la richiesta di caricamento di un file
-//function uploadFile(fileName, fileDim, fileFormat)
+var FormData = require('form-data');
+
 
 var path = require('path');
-var fs=require('fs');
+var fs = require('fs');
 var extfs = require('extfs');
+
 
 exports.removeFile = removeFileFn;
 exports.createFile =removeFileFn;
 exports.getFilesDataFromDir = getFilesDataFromDirFn;
 exports.getRandomFileFromDir = getRandomFileFromDirFn;
 exports.startUploadReq = startUploadReqFn;
+exports.getFilesAndUpload = getFilesAndUploadFn;
+
+exports.sendOneFile = sendOneFileFn;
 
 /**
  * Remove a file
@@ -123,15 +124,18 @@ function getRandomFileFromDirFn(startPath) {
     chosenFileData = fileData[rand];
 
     console.log("Client id: "+chosenFileData.idClient+". "+"File scelto: "+chosenFileData.startPath+chosenFileData.name);
-//    console.log(chosenFileData.idClient);
 
     return chosenFileData;
 }
 
 //removeFile('../Files/provaFile', "newFile.txt");
 //getRandomFileFromDirFn('../Files/');
-
+/**
+ * This is the function that starts the file upload process (not loading itself but the process).
+ * @param chosenFileData
+ */
 function startUploadReqFn(chosenFileData) {
+    console.log("A NEW FILE UPLOAD REQUEST STARTS......");
     var obj = {
         url: 'http://' + master.getMasterServerIp() + ':6601/api/master/newFileData',
         method: 'POST',
@@ -141,14 +145,63 @@ function startUploadReqFn(chosenFileData) {
             extension: chosenFileData.extension,
             dimension: chosenFileData.dimension,
             idClient: chosenFileData.idClient
-//            myIp: ip.address()
         }
     };
 
     request(obj, function (err, res) {
-        console.log("file "+obj.json.fileName+obj.json.extension+", inviati metadati da utente " + obj.json.idClient);
         if (err) {
             console.log(err);
+        }
+
+        //Client sends to slaves the file upload request.
+        var slaveServers = res.body.slaveList;
+        var guid = res.body.guid;
+
+        slaveServers.forEach(function(server){
+
+            var objGuidUser = {
+                url: 'http://'+server+':6601/api/chunk/newChunkGuidClient',
+                method: 'POST',
+                json: {
+                    type: "GUID_CLIENT",
+                    guid: guid,
+                    idClient: profile.getProfileUsername()
+                }
+            };
+
+            //Sending guid-idClient to slaves
+            request(objGuidUser, function (err, res) {
+                if (err) {
+                    console.log(err);
+                }
+                if(res.body.type == 'ACK')
+                    sendOneFileFn(chosenFileData.startPath+chosenFileData.name, server, guid);
+            });
+        });
+
+    });
+}
+
+function getFileAndStartUploadFn(startPath) {
+    var fileData = getRandomFileFromDirFn(startPath);
+    startUploadReqFn(fileData);
+    console.log("Filedata: "+fileData)
+}
+
+function getFilesAndUploadFn(startPath) {
+    setInterval(getFileAndStartUploadFn, config.randomGuidTime, startPath);
+}
+
+function sendOneFileFn(path, ipServer, guid) {
+    console.log("Sending file "+path+", to server ip "+ipServer);
+    var formData = {
+        guid: guid,
+        idClient: profile.getProfileUsername(),
+        my_file: fs.createReadStream(path)
+    };
+    request.post({url:'http://'+ipServer+':6601/api/chunk/newChunk', formData: formData}, function optionalCallback(err, httpResponse, body) {
+        if (err) {
+            return console.error('upload failed:', err);
         }
     });
 }

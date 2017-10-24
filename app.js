@@ -8,6 +8,9 @@ var config = require('./config/config');
 var request = require('request');
 var ip = require('ip');
 
+/*var multer  = require('multer');
+var upload = multer({ dest: 'uploads/' });
+*/
 /*
 var index = require('./routes/index');
 var users = require('./routes/users');
@@ -21,7 +24,7 @@ var port = process.env.PORT || 6603;
 
 
 var clientController = require('./controllers/clientController');
-var writeFileController = require('./controllers/writeFileController');
+var uploadFileController = require('./controllers/uploadFileController');
 var profile = require('./model/profile');
 
 // view engine setup
@@ -68,5 +71,15 @@ clientController.createProfile("Root", "root");
 
 clientController.getMaster();
 
-writeFileController.getRandomFileFromDir('./Files/');
-clientController.sendChunkGuidToMaster();
+
+//Use this sequence of functions to send a single file randomly chosen.
+
+var file = uploadFileController.getRandomFileFromDir('./Files/');
+uploadFileController.startUploadReq(file);
+
+
+
+//Periodically loading files, which are randomly selected.
+//uploadFileController.getFilesAndUpload('./Files/');
+
+
