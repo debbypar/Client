@@ -133,8 +133,6 @@ function getRandomFileFromDirFn(startPath) {
     rand = randomInt(0, fileData.length);
     chosenFileData = fileData[rand];
 
-    console.log("Client id: "+chosenFileData.idClient+". "+"File scelto: "+chosenFileData.startPath+chosenFileData.name);
-
     return chosenFileData;
 }
 
@@ -146,8 +144,7 @@ function getRandomFileFromDirFn(startPath) {
  * @param chosenFileData
  */
 function startUploadReqFn(chosenFileData) {
-    console.log("A NEW FILE UPLOAD REQUEST STARTS......");
-    console.log("CHOSEN: "+chosenFileData.name);
+    console.log("Client id: "+chosenFileData.idClient+" wants to upload the file "+chosenFileData.startPath+chosenFileData.name+'\n');
     var obj = {
         url: 'http://' + master.getMasterServerIp() + ':6601/api/master/newFileData',
         method: 'POST',
@@ -205,13 +202,9 @@ function startUploadReqFn(chosenFileData) {
 function sendGuidUserToSlavesFn(req, res) {
 
    if(req.body.type == 'UPINFO') {
-       console.log("Sto per inviare guid e idClient agli slaves");
- //      var slaveServers = req.body.slaveList;
        var guid = req.body.guid;
 
-   //    slaveServers.forEach(function (server) {
-
-           console.log("Sending guid " + guid + " and idClient " + profile.getProfileUsername() + " to " + req.body.ipSlave);
+           console.log("Sending guid " + guid + " and idClient " + profile.getProfileUsername() + " to " + req.body.ipSlave+'\n');
            var objGuidUser = {
                url: 'http://' + req.body.ipSlave + ':6601/api/chunk/newChunkGuidClient',
                method: 'POST',
@@ -229,7 +222,6 @@ function sendGuidUserToSlavesFn(req, res) {
                    console.log(err);
                }
                if (res.body.type == 'ACK_PENDING') {
-                   console.log("Posso inviare il file " + req.body.path + ", (guid " + guid + ") al server " + req.body.ipSlave);
                    sendOneFileFn(req.body.path, req.body.ipSlave, guid);
                }
            });
@@ -249,7 +241,7 @@ function getFilesAndUploadFn(startPath) {
 }
 
 function sendOneFileFn(path, ipServer, guid) {
-    console.log("Sending file "+path+", to server ip "+ipServer);
+    console.log("Sending file "+path+", to server ip "+ipServer+'\n');
     var formData = {
         guid: guid,
         idClient: profile.getProfileUsername(),
