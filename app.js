@@ -18,39 +18,39 @@ var users = require('./routes/users');
 //var ip = require('ip');
 
 var app = express();
+app.use(bodyParser.json());
+app.use(express.static(__dirname + '/public'));
 
 //Porta di ascolto del client
-var port = process.env.PORT || 6603;
+//var port = process.env.PORT || 6603;
 
 
 var clientController = require('./controllers/clientController');
 var uploadFileController = require('./controllers/uploadFileController');
-var profile = require('./model/profile');
+//var profile = require('./model/profile');
 
 // view engine setup
-app.set('views', path.join(__dirname, 'views'));
+/*app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
-
+*/
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-app.use(logger('dev'));
-app.use(bodyParser.json());
+/*app.use(logger('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
-
+*/
 /*app.use('/', index);
 app.use('/users', users);*/
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+/*app.use(function(req, res, next) {
   var err = new Error('Not Found');
   err.status = 404;
   next(err);
-});
+});*/
 
 // error handler
-app.use(function(err, req, res, next) {
+/*app.use(function(err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
@@ -58,9 +58,11 @@ app.use(function(err, req, res, next) {
   // render the error page
   res.status(err.status || 500);
   res.render('error');
-});
+});*/
 
-module.exports = app;
+//module.exports = app;
+
+require('./routes/clientRoute')(app);
 
 app.listen(config.port, config.ip, function() {
     // print a message when the server starts listening
@@ -73,14 +75,19 @@ clientController.getMaster();
 
 
 //Use this sequence of functions to send a single file randomly chosen.
-
+/*
 var file = uploadFileController.getRandomFileFromDir('./Files/');
 uploadFileController.startUploadReq(file);
 
+file = uploadFileController.getRandomFileFromDir('./Files/');
+uploadFileController.startUploadReq(file);
 
+file = uploadFileController.getRandomFileFromDir('./Files/');
+uploadFileController.startUploadReq(file);
+*/
 
 //Periodically loading files, which are randomly selected.
-//uploadFileController.getFilesAndUpload('./Files/');
+uploadFileController.getFilesAndUpload('./Files/');
 /*
 var files = uploadFileController.getFilesDataFromDir('./Files/');
 for(var i=0; i<files.length; i++)

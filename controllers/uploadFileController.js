@@ -11,7 +11,9 @@ var path = require('path');
 var fs = require('fs');
 var extfs = require('extfs');
 var util = require("util");
-var resolve = require('path').resolve;
+var resolve = require('path').resolve
+
+var ip = require('ip');
 
 
 exports.removeFile = removeFileFn;
@@ -22,7 +24,7 @@ exports.startUploadReq = startUploadReqFn;
 exports.getFilesAndUpload = getFilesAndUploadFn;
 
 exports.sendOneFile = sendOneFileFn;
-
+exports.sendGuidUserToSlaves = sendGuidUserToSlavesFn;
 /**
  * Remove a file
  *
@@ -96,8 +98,8 @@ function getFilesDataFromDirFn(startPath) {
             });
         }
     }
-    for(var i=0; i<fileData.length; i++)
-       console.log(i+": "+fileData[i].startPath+"...."+fileData[i].name);
+/*    for(var i=0; i<fileData.length; i++)
+       console.log(i+": "+fileData[i].startPath+"...."+fileData[i].name);*/
     return fileData;
 }
 
@@ -156,7 +158,8 @@ function startUploadReqFn(chosenFileData) {
             extension: chosenFileData.extension,
             sizeFile: chosenFileData.sizeFile,
             idClient: chosenFileData.idClient,
-            lastModified: chosenFileData.lastModified
+            lastModified: chosenFileData.lastModified,
+            ipClient: ip.address()
         }
     };
 
@@ -166,7 +169,7 @@ function startUploadReqFn(chosenFileData) {
         }
 
         //Client sends to slaves the file upload request.
-        var slaveServers = res.body.slaveList;
+    /*    var slaveServers = res.body.slaveList;
         var guid = res.body.guid;
 
         slaveServers.forEach(function(server){
@@ -194,19 +197,55 @@ function startUploadReqFn(chosenFileData) {
                     sendOneFileFn(chosenFileData.startPath+chosenFileData.name, server, guid);
                 }
             });
-        });
+        });*/
 
     });
+}
+
+function sendGuidUserToSlavesFn(req, res) {
+
+   if(req.body.type == 'UPINFO') {
+       console.log("Sto per inviare guid e idClient agli slaves");
+ //      var slaveServers = req.body.slaveList;
+       var guid = req.body.guid;
+
+   //    slaveServers.forEach(function (server) {
+
+           console.log("Sending guid " + guid + " and idClient " + profile.getProfileUsername() + " to " + req.body.ipSlave);
+           var objGuidUser = {
+               url: 'http://' + req.body.ipSlave + ':6601/api/chunk/newChunkGuidClient',
+               method: 'POST',
+               json: {
+                   type: "GUID_CLIENT",
+                   guid: guid,
+                   idClient: profile.getProfileUsername()
+               }
+           };
+
+           //Sending guid-idClient to slaves
+           request(objGuidUser, function (err, res) {
+               //   console.log("TYPE REQ: "+res.body.type);
+               if (err) {
+                   console.log(err);
+               }
+               if (res.body.type == 'ACK_PENDING') {
+                   console.log("Posso inviare il file " + req.body.path + ", (guid " + guid + ") al server " + req.body.ipSlave);
+                   sendOneFileFn(req.body.path, req.body.ipSlave, guid);
+               }
+           });
+  //     });
+       res.send({status: 'OK'});
+   }
 }
 
 function getFileAndStartUploadFn(startPath) {
     var fileData = getRandomFileFromDirFn(startPath);
     startUploadReqFn(fileData);
-    console.log("Filedata: "+fileData);
+ //   console.log("Filedata: "+fileData);
 }
 
 function getFilesAndUploadFn(startPath) {
-    setInterval(getFileAndStartUploadFn, config.randomGuidTime, startPath);
+     setInterval(getFileAndStartUploadFn, config.randomGuidTime, startPath);
 }
 
 function sendOneFileFn(path, ipServer, guid) {
