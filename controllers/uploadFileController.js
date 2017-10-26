@@ -96,6 +96,8 @@ function getFilesDataFromDirFn(startPath) {
             });
         }
     }
+    for(var i=0; i<fileData.length; i++)
+       console.log(i+": "+fileData[i].startPath+"...."+fileData[i].name);
     return fileData;
 }
 
@@ -134,6 +136,7 @@ function getRandomFileFromDirFn(startPath) {
     return chosenFileData;
 }
 
+
 //removeFile('../Files/provaFile', "newFile.txt");
 //getRandomFileFromDirFn('../Files/');
 /**
@@ -142,6 +145,7 @@ function getRandomFileFromDirFn(startPath) {
  */
 function startUploadReqFn(chosenFileData) {
     console.log("A NEW FILE UPLOAD REQUEST STARTS......");
+    console.log("CHOSEN: "+chosenFileData.name);
     var obj = {
         url: 'http://' + master.getMasterServerIp() + ':6601/api/master/newFileData',
         method: 'POST',
@@ -167,6 +171,7 @@ function startUploadReqFn(chosenFileData) {
 
         slaveServers.forEach(function(server){
 
+            console.log("Sending guid "+guid+" and idClient "+profile.getProfileUsername()+" to "+server);
             var objGuidUser = {
                 url: 'http://'+server+':6601/api/chunk/newChunkGuidClient',
                 method: 'POST',
@@ -179,11 +184,15 @@ function startUploadReqFn(chosenFileData) {
 
             //Sending guid-idClient to slaves
             request(objGuidUser, function (err, res) {
+             //   console.log("TYPE REQ: "+res.body.type);
                 if (err) {
                     console.log(err);
                 }
-                if(res.body.type == 'ACK')
+                if(res.body.type == 'ACK_PENDING')
+                {
+                    console.log("Posso inviare il file "+chosenFileData.startPath+chosenFileData.name+", (guid "+guid+") al server "+server);
                     sendOneFileFn(chosenFileData.startPath+chosenFileData.name, server, guid);
+                }
             });
         });
 
@@ -207,9 +216,13 @@ function sendOneFileFn(path, ipServer, guid) {
         idClient: profile.getProfileUsername(),
         my_file: fs.createReadStream(path)
     };
-    request.post({url:'http://'+ipServer+':6601/api/chunk/newChunk', formData: formData}, function optionalCallback(err, httpResponse, body) {
+    request.post({url:'http://'+ipServer+':6601/api/chunk/newChunk', formData: formData}, function optionalCallback(err, res) {
         if (err) {
             return console.error('upload failed:', err);
+        }
+        if(res.body.status == 'ACK')
+        {
+            console.log("File saved in master table.");
         }
     });
 }

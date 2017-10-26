@@ -67,7 +67,7 @@ app.listen(config.port, config.ip, function() {
     console.log("server starting on " + config.ip + ':' + config.port + " IP: " + ip.address());
 });
 
-clientController.createProfile("Root", "root");
+clientController.createProfile("Debora", "deb");
 
 clientController.getMaster();
 
@@ -81,5 +81,11 @@ uploadFileController.startUploadReq(file);
 
 //Periodically loading files, which are randomly selected.
 //uploadFileController.getFilesAndUpload('./Files/');
-
+/*
+var files = uploadFileController.getFilesDataFromDir('./Files/');
+for(var i=0; i<files.length; i++)
+{
+    console.log("file "+i+": "+files[i]);
+    setInterval(uploadFileController.startUploadReq(), config.randomGuidTime, files[i]);
+}*/
 
