@@ -8,6 +8,7 @@ module.exports = function (app) {
 
     app.post('/api/client/sendRequest', uploadController.sendGuidUserToSlaves);
 
+    app.post('/api/client/fileSavedSuccess', uploadController.savedSuccess);
 
 
 };

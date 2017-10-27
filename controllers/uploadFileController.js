@@ -25,6 +25,7 @@ exports.getFilesAndUpload = getFilesAndUploadFn;
 
 exports.sendOneFile = sendOneFileFn;
 exports.sendGuidUserToSlaves = sendGuidUserToSlavesFn;
+exports.savedSuccess = savedSuccessFn;
 /**
  * Remove a file
  *
@@ -247,4 +248,10 @@ function sendOneFileFn(path, ipServer, guid) {
             console.log("File saved in master table.");
         }
     });
+}
+
+function savedSuccessFn(req, res) {
+    if(req.body.type == 'FILE_SAVED_SUCC')
+        console.log("Uploading "+req.body.nameFile+" SUCCESS!!!!!\n");
+    res.send({status: 'ACK'});
 }
