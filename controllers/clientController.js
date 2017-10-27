@@ -25,4 +25,5 @@ function getMasterFn(){
 function createProfileFn(username, password) {
     profile.setProfileUsername(username);
     profile.setProfilePassword(password);
+    console.log("Hi, I'm "+username);
 }

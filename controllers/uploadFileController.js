@@ -142,7 +142,8 @@ function getRandomFileFromDirFn(startPath) {
  * @param chosenFileData
  */
 function startUploadReqFn(chosenFileData) {
-    console.log("Client id: "+chosenFileData.idClient+" wants to upload the file "+chosenFileData.startPath+chosenFileData.name+'\n');
+    console.log("I wants to upload the file "+chosenFileData.startPath+chosenFileData.name+'\n');
+    console.log("->  Sending metadata to server.");
     var obj = {
         url: 'http://' + master.getMasterServerIp() + ':6601/api/master/newFileData',
         method: 'POST',
@@ -167,12 +168,18 @@ function startUploadReqFn(chosenFileData) {
     });
 }
 
+/**
+ * The client receives (guid, ipServer) from master and contacts the ipServer.
+ * If the server recognizes client request as authorized by the master, the client sends the file.
+ * @param req
+ * @param res
+ */
 function sendGuidUserToSlavesFn(req, res) {
 
    if(req.body.type == 'UPINFO') {
        var guid = req.body.guid;
 
-           console.log("Sending guid " + guid + " and idClient " + profile.getProfileUsername() + " to " + req.body.ipSlave+'\n');
+           console.log("->  Sending (" + guid + " - " + profile.getProfileUsername() + ") to " + req.body.ipSlave);
            var objGuidUser = {
                url: 'http://' + req.body.ipSlave + ':6601/api/chunk/newChunkGuidClient',
                method: 'POST',
@@ -190,6 +197,7 @@ function sendGuidUserToSlavesFn(req, res) {
                    console.log(err);
                }
                if (res.body.type == 'ACK_PENDING') {
+                   console.log("<-  Received ack to upload file from "+req.body.ipSlave);
                    sendOneFileFn(req.body.path, req.body.ipSlave, guid);
                }
            });
@@ -224,7 +232,7 @@ function getFilesAndUploadFn(startPath) {
  * @param guid - The GUID that identifies the file.
  */
 function sendOneFileFn(path, ipServer, guid) {
-    console.log("Sending file "+path+", to server ip "+ipServer+'\n');
+    console.log("->  Sending "+path+" to "+ipServer+'\n');
     var formData = {
         guid: guid,
         idClient: profile.getProfileUsername(),
