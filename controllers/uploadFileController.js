@@ -101,6 +101,7 @@ function getFilesDataFromDirFn(startPath) {
     }
 /*    for(var i=0; i<fileData.length; i++)
        console.log(i+": "+fileData[i].startPath+"...."+fileData[i].name);*/
+
     return fileData;
 }
 
@@ -145,6 +146,7 @@ function getRandomFileFromDirFn(startPath) {
 function startUploadReqFn(chosenFileData) {
     console.log("I wants to upload the file "+chosenFileData.startPath+chosenFileData.name+'\n');
     console.log("->  Sending metadata to server.");
+
     var obj = {
         url: 'http://' + master.getMasterServerIp() + ':6601/api/master/newFileData',
         method: 'POST',
@@ -193,7 +195,6 @@ function sendGuidUserToSlavesFn(req, res) {
 
            //Sending guid-idClient to slaves
            request(objGuidUser, function (err, res) {
-               //   console.log("TYPE REQ: "+res.body.type);
                if (err) {
                    console.log(err);
                }
@@ -232,12 +233,13 @@ function getFilesAndUploadFn(startPath) {
  * @param ipServer - The ip server I want to send the file
  * @param guid - The GUID that identifies the file.
  */
-function sendOneFileFn(path, ipServer, guid) {
-    console.log("->  Sending "+path+" to "+ipServer+'\n');
+function sendOneFileFn(pathAbs, ipServer, guid) {
+    console.log("->  Sending "+path.relative(process.cwd(),pathAbs)+" to "+ipServer+'\n');
     var formData = {
         guid: guid,
         idClient: profile.getProfileUsername(),
-        my_file: fs.createReadStream(path)
+        relPath: path.relative(process.cwd(), pathAbs),
+        my_file: fs.createReadStream(pathAbs)
     };
     request.post({url:'http://'+ipServer+':6601/api/chunk/newChunk', formData: formData}, function optionalCallback(err, res) {
         if (err) {
