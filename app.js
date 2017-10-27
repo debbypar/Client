@@ -79,20 +79,9 @@ clientController.getMaster();
 var file = uploadFileController.getRandomFileFromDir('./Files/');
 uploadFileController.startUploadReq(file);
 
-file = uploadFileController.getRandomFileFromDir('./Files/');
-uploadFileController.startUploadReq(file);
-
-file = uploadFileController.getRandomFileFromDir('./Files/');
-uploadFileController.startUploadReq(file);
 */
 
 //Periodically loading files, which are randomly selected.
 uploadFileController.getFilesAndUpload('./Files/');
-/*
-var files = uploadFileController.getFilesDataFromDir('./Files/');
-for(var i=0; i<files.length; i++)
-{
-    console.log("file "+i+": "+files[i]);
-    setInterval(uploadFileController.startUploadReq(), config.randomGuidTime, files[i]);
-}*/
+
 

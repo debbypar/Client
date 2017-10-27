@@ -137,8 +137,6 @@ function getRandomFileFromDirFn(startPath) {
 }
 
 
-//removeFile('../Files/provaFile', "newFile.txt");
-//getRandomFileFromDirFn('../Files/');
 /**
  * This is the function that starts the file upload process (not loading itself but the process).
  * @param chosenFileData
@@ -165,36 +163,6 @@ function startUploadReqFn(chosenFileData) {
             console.log(err);
         }
 
-        //Client sends to slaves the file upload request.
-    /*    var slaveServers = res.body.slaveList;
-        var guid = res.body.guid;
-
-        slaveServers.forEach(function(server){
-
-            console.log("Sending guid "+guid+" and idClient "+profile.getProfileUsername()+" to "+server);
-            var objGuidUser = {
-                url: 'http://'+server+':6601/api/chunk/newChunkGuidClient',
-                method: 'POST',
-                json: {
-                    type: "GUID_CLIENT",
-                    guid: guid,
-                    idClient: profile.getProfileUsername()
-                }
-            };
-
-            //Sending guid-idClient to slaves
-            request(objGuidUser, function (err, res) {
-             //   console.log("TYPE REQ: "+res.body.type);
-                if (err) {
-                    console.log(err);
-                }
-                if(res.body.type == 'ACK_PENDING')
-                {
-                    console.log("Posso inviare il file "+chosenFileData.startPath+chosenFileData.name+", (guid "+guid+") al server "+server);
-                    sendOneFileFn(chosenFileData.startPath+chosenFileData.name, server, guid);
-                }
-            });
-        });*/
 
     });
 }
@@ -225,21 +193,36 @@ function sendGuidUserToSlavesFn(req, res) {
                    sendOneFileFn(req.body.path, req.body.ipSlave, guid);
                }
            });
-  //     });
        res.send({status: 'OK'});
    }
 }
 
+/**
+ * This function selects a single random file from the directory 'startPath' and starts a new uploading request.
+ *
+ * @param startPath
+ */
 function getFileAndStartUploadFn(startPath) {
     var fileData = getRandomFileFromDirFn(startPath);
     startUploadReqFn(fileData);
  //   console.log("Filedata: "+fileData);
 }
 
+/**
+ * This function sends multiple uploading requests.
+ * @param startPath - the absolute path of the directory containing the file randomly chosen.
+ */
 function getFilesAndUploadFn(startPath) {
      setInterval(getFileAndStartUploadFn, config.randomGuidTime, startPath);
 }
 
+
+/**
+ * The client sends file to server.
+ * @param path - The absolute path of the file in the client machine.
+ * @param ipServer - The ip server I want to send the file
+ * @param guid - The GUID that identifies the file.
+ */
 function sendOneFileFn(path, ipServer, guid) {
     console.log("Sending file "+path+", to server ip "+ipServer+'\n');
     var formData = {
