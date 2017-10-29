@@ -27,7 +27,7 @@ app.use(express.static(__dirname + '/public'));
 
 var clientController = require('./controllers/clientController');
 var uploadFileController = require('./controllers/uploadFileController');
-//var profile = require('./model/profile');
+
 
 // view engine setup
 /*app.set('views', path.join(__dirname, 'views'));
@@ -73,7 +73,6 @@ clientController.createProfile("Debora", "deb");
 
 clientController.getMaster();
 
-
 //Use this sequence of functions to send a single file randomly chosen.
 /*
 var file = uploadFileController.getRandomFileFromDir('./Files/');
@@ -82,6 +81,6 @@ uploadFileController.startUploadReq(file);
 */
 
 //Periodically loading files, which are randomly selected.
-uploadFileController.getFilesAndUpload('./Files/');
+uploadFileController.getFilesAndUpload('./Files/provaFile/');
 
-
+//uploadFileController.startUpload('/opt/project/Files/file1.txt', '/Files/file1.txt');

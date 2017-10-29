@@ -26,6 +26,10 @@ exports.getFilesAndUpload = getFilesAndUploadFn;
 exports.sendOneFile = sendOneFileFn;
 exports.sendGuidUserToSlaves = sendGuidUserToSlavesFn;
 exports.savedSuccess = savedSuccessFn;
+exports.getFileData = getFileDataFn;
+exports.startUpload = startUploadFn;
+
+
 /**
  * Remove a file
  *
@@ -53,6 +57,8 @@ function createFileFn(startPath, nameFile, text)
 }
 
 
+
+
 /**
  *
  * @param startPath
@@ -67,42 +73,43 @@ function getFilesDataFromDirFn(startPath) {
 
     var fileData = [];
 
-    if (!fs.existsSync(startPath)) {
+    if (!fs.existsSync(startPath, 'utf8')) {
         console.log("no dir ", startPath);
         return;
     }
+    else {
+        var files;
 
-    var files;
+        //Se la cartella è vuota, crea un nuovo file txt
+        var empty = extfs.isEmptySync(startPath);
+        if (empty)
+            createFileFn(startPath, "newFile.txt", "A new test file has been created.");
 
-    //Se la cartella è vuota, crea un nuovo file txt
-    var empty = extfs.isEmptySync(startPath);
-    if(empty)
-        createFileFn(startPath, "newFile.txt", "A new test file has been created.");
+        var stats = fs.statSync(startPath);
+        var mtime = new Date(util.inspect(stats.mtime));
 
-    var stats = fs.statSync(startPath);
-    var mtime = new Date(util.inspect(stats.mtime));
+        files = fs.readdirSync(startPath);
 
-    files = fs.readdirSync(startPath);
-
-    for(var i = 0; i < files.length; i++) {
-        var stats = fs.statSync(startPath + '/' + files[i]);
-        if (!stats.isDirectory()) {
-            var fileSizeInBytes = stats["size"];
-            fileData.push({
-                startPath: startPath,
-                name: files[i],
-                absPath:resolve(startPath)+'/'+files[i],
-                extension: path.extname(files[i]),
-                sizeFile: fileSizeInBytes,
-                idClient: profile.getProfileUsername(),
-                lastModified: mtime
-            });
+        for (var i = 0; i < files.length; i++) {
+            var stats = fs.statSync(startPath + '/' + files[i]);
+            if (!stats.isDirectory()) {
+                var fileSizeInBytes = stats["size"];
+                fileData.push({
+                    startPath: startPath,
+                    name: files[i],
+                    absPath: resolve(startPath) + '/' + files[i],
+                    extension: path.extname(files[i]),
+                    sizeFile: fileSizeInBytes,
+                    idClient: profile.getProfileUsername(),
+                    lastModified: mtime
+                });
+            }
         }
-    }
-/*    for(var i=0; i<fileData.length; i++)
-       console.log(i+": "+fileData[i].startPath+"...."+fileData[i].name);*/
+        /*    for(var i=0; i<fileData.length; i++)
+               console.log(i+": "+fileData[i].startPath+"...."+fileData[i].name);*/
 
-    return fileData;
+        return fileData;
+    }
 }
 
 /**
@@ -153,7 +160,8 @@ function startUploadReqFn(chosenFileData) {
         json: {
             type: "METADATA",
             fileName: chosenFileData.name,
-            absPath: chosenFileData.absPath,
+            origAbsPath: chosenFileData.absPath,
+            destRelPath: path.relative(process.cwd(), chosenFileData.absPath),
             extension: chosenFileData.extension,
             sizeFile: chosenFileData.sizeFile,
             idClient: chosenFileData.idClient,
@@ -166,8 +174,6 @@ function startUploadReqFn(chosenFileData) {
         if (err) {
             console.log(err);
         }
-
-
     });
 }
 
@@ -200,7 +206,7 @@ function sendGuidUserToSlavesFn(req, res) {
                }
                if (res.body.type == 'ACK_PENDING') {
                    console.log("<-  Received ack to upload file from "+req.body.ipSlave);
-                   sendOneFileFn(req.body.path, req.body.ipSlave, guid);
+                   sendOneFileFn(req.body.origPath, req.body.destPath, req.body.ipSlave, guid);
                }
            });
        res.send({status: 'OK'});
@@ -218,6 +224,7 @@ function getFileAndStartUploadFn(startPath) {
  //   console.log("Filedata: "+fileData);
 }
 
+
 /**
  * This function sends multiple uploading requests.
  * @param startPath - the absolute path of the directory containing the file randomly chosen.
@@ -233,14 +240,15 @@ function getFilesAndUploadFn(startPath) {
  * @param ipServer - The ip server I want to send the file
  * @param guid - The GUID that identifies the file.
  */
-function sendOneFileFn(pathAbs, ipServer, guid) {
-    console.log("->  Sending "+path.relative(process.cwd(),pathAbs)+" to "+ipServer+'\n');
+function sendOneFileFn(origAbsPath, destRelPath, ipServer, guid) {
+    console.log("->  Sending "+path.relative(process.cwd(),origAbsPath)+" to "+ipServer+'\n');
     var formData = {
         guid: guid,
         idClient: profile.getProfileUsername(),
-        relPath: path.relative(process.cwd(), pathAbs),
-        my_file: fs.createReadStream(pathAbs)
+        destRelPath: destRelPath,
+        my_file: fs.createReadStream(origAbsPath)
     };
+
     request.post({url:'http://'+ipServer+':6601/api/chunk/newChunk', formData: formData}, function optionalCallback(err, res) {
         if (err) {
             return console.error('upload failed:', err);
@@ -256,4 +264,71 @@ function savedSuccessFn(req, res) {
     if(req.body.type == 'FILE_SAVED_SUCC')
         console.log("Uploading "+req.body.nameFile+" SUCCESS!!!!!\n");
     res.send({status: 'ACK'});
+}
+
+/**
+ * The client collects data from selected file.
+ * @param fileAbsPath
+ * @return {string}
+ */
+function getFileDataFn(fileAbsPath) {
+
+    if (!fs.existsSync(fileAbsPath, 'utf8')) {
+        console.log("no file ", fileAbsPath);
+        return;
+    }
+    else {
+        console.log("Esiste");
+
+        var fileData = '';
+
+        //   var file = fs.readFileSync(fileAbsPath, 'utf8');
+
+        var stats = fs.statSync(fileAbsPath);
+        var mtime = new Date(util.inspect(stats.mtime));
+        var fileSizeInBytes = stats["size"];
+        fileData = {
+            absPath: fileAbsPath,
+            name: path.basename(fileAbsPath),
+            extension: path.extname(path.basename(fileAbsPath)),
+            sizeFile: fileSizeInBytes,
+            idClient: profile.getProfileUsername(),
+            lastModified: mtime
+        };
+        return fileData;
+    }
+}
+
+
+/**
+ * The client wants to upload file in 'fileAbsPath' to the destination path
+ * @param fileAbsPath - The local path of the chosen file.
+ * @param destRelPath - The path where the file is uploaded.
+ */
+function startUploadFn(fileAbsPath, destRelPath) {
+    var fileData = getFileDataFn(fileAbsPath);
+    console.log("I wants to upload the file "+fileData.absPath+" in "+destRelPath+'\n');
+    console.log("->  Sending metadata to server.");
+
+    var obj = {
+        url: 'http://' + master.getMasterServerIp() + ':6601/api/master/newFileData',
+        method: 'POST',
+        json: {
+            type: "METADATA",
+            fileName: fileData.name,
+            origAbsPath: fileData.absPath,
+            destRelPath: destRelPath,
+            extension: fileData.extension,
+            sizeFile: fileData.sizeFile,
+            idClient: fileData.idClient,
+            lastModified: fileData.lastModified,
+            ipClient: ip.address()
+        }
+    };
+
+    request(obj, function (err, res) {
+        if (err) {
+            console.log(err);
+        }
+    });
 }
