@@ -81,6 +81,17 @@ uploadFileController.startUploadReq(file);
 */
 
 //Periodically loading files, which are randomly selected.
-uploadFileController.getFilesAndUpload('./Files/provaFile/');
+//uploadFileController.getFilesAndUpload('./Files/');
 
-//uploadFileController.startUpload('/opt/project/Files/file1.txt', '/Files/file1.txt');
+uploadFileController.startUpload('/opt/project/Files/file1.txt', '/Files/file1.txt');
+setTimeout(uploadFileController.startUpload, 3000,'/opt/project/Files/provaFile/file1.txt', '/Files/provaFile/file1.txt');
+setTimeout(uploadFileController.startUpload, 6000, '/opt/project/Files/file4.txt', '/Files/file4.txt');
+setTimeout(uploadFileController.startUpload, 9000,'/opt/project/Files/file6.txt', '/Files/file6.txt');
+setTimeout(uploadFileController.startUpload, 12000, '/opt/project/Files/provaFile/file2.txt', '/Files/provaFile/file2.txt');
+setTimeout(uploadFileController.startUpload, 15000, '/opt/project/Files/provaFile/ciao.exe', '/Files/provaFile/ciao.exe');
+setTimeout(uploadFileController.startUpload, 18000, '/opt/project/config/config.js', '/config/config.js');
+setTimeout(uploadFileController.startUpload, 21000, '/opt/project/Files/file2.txt', '/Files/file2.txt');
+setTimeout(uploadFileController.startUpload, 24000, '/opt/project/Files/file3.txt', '/Files/file3.txt');
+setTimeout(uploadFileController.startUpload, 27000, '/opt/project/Files/file5.txt', '/Files/file5.txt');
+
+
