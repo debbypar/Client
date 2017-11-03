@@ -25,7 +25,6 @@ exports.getFilesAndUpload = getFilesAndUploadFn;
 
 exports.sendOneFile = sendOneFileFn;
 exports.sendGuidUserToSlaves = sendGuidUserToSlavesFn;
-exports.savedSuccess = savedSuccessFn;
 exports.getFileData = getFileDataFn;
 exports.startUpload = startUploadFn;
 
@@ -253,18 +252,23 @@ function sendOneFileFn(origAbsPath, destRelPath, ipServer, guid) {
         if (err) {
             return console.error('upload failed:', err);
         }
-        if(res.body.status === 'ACK')
+        else if(res.statusCode === 200)
         {
-            console.log("File saved in master table.");
+            var jsonRes = JSON.parse(res.body);
+            if(jsonRes.type === 'FILE_SAVED_SUCCESS')
+            {
+                console.log("Uploading "+jsonRes.nameFile+" SUCCESS!!!!!\n");
+            }
         }
     });
 }
 
+/*
 function savedSuccessFn(req, res) {
     if(req.body.type === 'FILE_SAVED_SUCCESS')
         console.log("Uploading "+req.body.nameFile+" SUCCESS!!!!!\n");
     res.send({status: 'ACK'});
-}
+}*/
 
 /**
  * The client collects data from selected file.
