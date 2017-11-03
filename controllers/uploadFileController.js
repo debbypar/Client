@@ -170,7 +170,7 @@ function startUploadReqFn(chosenFileData) {
         }
     };
 
-    request(obj, function (err, res) {
+    request(obj, function (err, res1) {
         if (err) {
             console.log(err);
         }
@@ -244,7 +244,7 @@ function sendOneFileFn(origAbsPath, destRelPath, ipServer, guid) {
     console.log("->  Sending "+path.relative(process.cwd(),origAbsPath)+" to "+ipServer+'\n');
     var formData = {
         guid: guid,
-        idClient: profile.getProfileUsername(),
+        idUser: profile.getProfileUsername(),
         destRelPath: destRelPath,
         my_file: fs.createReadStream(origAbsPath)
     };
@@ -253,7 +253,7 @@ function sendOneFileFn(origAbsPath, destRelPath, ipServer, guid) {
         if (err) {
             return console.error('upload failed:', err);
         }
-        if(res.body.status == 'ACK')
+        if(res.body.status === 'ACK')
         {
             console.log("File saved in master table.");
         }
@@ -261,7 +261,7 @@ function sendOneFileFn(origAbsPath, destRelPath, ipServer, guid) {
 }
 
 function savedSuccessFn(req, res) {
-    if(req.body.type == 'FILE_SAVED_SUCC')
+    if(req.body.type === 'FILE_SAVED_SUCCESS')
         console.log("Uploading "+req.body.nameFile+" SUCCESS!!!!!\n");
     res.send({status: 'ACK'});
 }
@@ -278,11 +278,8 @@ function getFileDataFn(fileAbsPath) {
         return;
     }
     else {
-        console.log("Esiste");
 
         var fileData = '';
-
-        //   var file = fs.readFileSync(fileAbsPath, 'utf8');
 
         var stats = fs.statSync(fileAbsPath);
         var mtime = new Date(util.inspect(stats.mtime));
@@ -292,7 +289,7 @@ function getFileDataFn(fileAbsPath) {
             name: path.basename(fileAbsPath),
             extension: path.extname(path.basename(fileAbsPath)),
             sizeFile: fileSizeInBytes,
-            idClient: profile.getProfileUsername(),
+            idUser: profile.getProfileUsername(),
             lastModified: mtime
         };
         return fileData;
@@ -320,15 +317,41 @@ function startUploadFn(fileAbsPath, destRelPath) {
             destRelPath: destRelPath,
             extension: fileData.extension,
             sizeFile: fileData.sizeFile,
-            idClient: fileData.idClient,
-            lastModified: fileData.lastModified,
-            ipClient: ip.address()
+            idUser: fileData.idUser,
+            lastModified: fileData.lastModified
         }
     };
 
     request(obj, function (err, res) {
         if (err) {
             console.log(err);
+        }
+        if(res.body.type === 'UPINFO') {
+            var guid = res.body.guid;
+
+            res.body.ipSlaves.forEach(function (ip) {
+                console.log("->  Sending (" + guid + " - " + profile.getProfileUsername() + ") to " + ip);
+                var objGuidUser = {
+                    url: 'http://' + ip + ':6601/api/chunk/newChunkGuidClient',
+                    method: 'POST',
+                    json: {
+                        type: "GUID_CLIENT",
+                        guid: guid,
+                        idUser: profile.getProfileUsername()
+                    }
+                };
+
+                //Sending guid-idClient to slaves
+                request(objGuidUser, function (err, res) {
+                    if (err) {
+                        console.log(err);
+                    }
+                    if (res.body.type === 'ACK_PENDING') {
+                        console.log("<-  Received ack to upload file from "+ip);
+                        sendOneFileFn(fileAbsPath, destRelPath, ip, guid);
+                    }
+                });
+            });
         }
     });
 }
