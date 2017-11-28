@@ -330,6 +330,7 @@ function startUploadFn(fileAbsPath, destRelPath) {
         if (err) {
             console.log(err);
         }
+
         if(res.body.type === 'UPINFO') {
             var guid = res.body.guid;
 
