@@ -326,6 +326,8 @@ function startUploadFn(fileAbsPath, destRelPath) {
         }
     };
 
+    console.log("Master: "+obj.url);
+
     request(obj, function (err, res) {
         if (err) {
             console.log(err);

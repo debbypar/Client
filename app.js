@@ -27,6 +27,11 @@ app.use(express.static(__dirname + '/public'));
 
 var clientController = require('./controllers/clientController');
 var uploadFileController = require('./controllers/uploadFileController');
+var deleteFileController = require('./controllers/deleteFileController');
+
+var profile = require('./model/profile');
+var master = require('./model/masterServer');
+
 
 
 // view engine setup
@@ -71,7 +76,10 @@ app.listen(config.port, config.ip, function() {
 
 clientController.createProfile("Debora", "deb");
 
-clientController.getMaster();
+//clientController.getMaster();
+
+master.setMasterServerIp('172.17.0.3');
+
 
 //Use this sequence of functions to send a single file randomly chosen.
 /*
@@ -83,15 +91,16 @@ uploadFileController.startUploadReq(file);
 //Periodically loading files, which are randomly selected.
 //uploadFileController.getFilesAndUpload('./Files/');
 
-uploadFileController.startUpload('/opt/project/Files/file1.txt', '/Files/file1.txt');
-setTimeout(uploadFileController.startUpload, 13000,'/opt/project/Files/provaFile/file1.txt', '/Files/provaFile/file1.txt');
-setTimeout(uploadFileController.startUpload, 16000, '/opt/project/Files/file4.txt', '/Files/file4.txt');
-setTimeout(uploadFileController.startUpload, 19000,'/opt/project/Files/file6.txt', '/Files/file6.txt');
-setTimeout(uploadFileController.startUpload, 112000, '/opt/project/Files/provaFile/file2.txt', '/Files/provaFile/file2.txt');
-setTimeout(uploadFileController.startUpload, 115000, '/opt/project/Files/provaFile/ciao.exe', '/Files/provaFile/ciao.exe');
+uploadFileController.startUpload('/opt/project/Files/file1.txt', 'Debora/Files/file1.txt');
+setTimeout(uploadFileController.startUpload, 5000,'/opt/project/Files/provaFile/file1.txt', 'Debora/Files/provaFile/file1.txt');
+setTimeout(uploadFileController.startUpload, 8000, '/opt/project/Files/file4.txt', 'Debora/Files/file4.txt');
+setTimeout(uploadFileController.startUpload, 11000,'/opt/project/Files/file6.txt', 'Debora/Files/file6.txt');
+/*setTimeout(uploadFileController.startUpload, 14000, '/opt/project/Files/provaFile/file2.txt', 'Debora/Files/provaFile/file2.txt');
+setTimeout(uploadFileController.startUpload, 17000, '/opt/project/Files/provaFile/ciao.exe', 'Debora/Files/provaFile/ciao.exe');
 setTimeout(uploadFileController.startUpload, 118000, '/opt/project/config/config.js', '/config/config.js');
 setTimeout(uploadFileController.startUpload, 121000, '/opt/project/Files/file2.txt', '/Files/file2.txt');
 setTimeout(uploadFileController.startUpload, 124000, '/opt/project/Files/file3.txt', '/Files/file3.txt');
 setTimeout(uploadFileController.startUpload, 127000, '/opt/project/Files/file5.txt', '/Files/file5.txt');
+*/
 
-
+setTimeout(deleteFileController.startDelete, 14000, profile.getProfileUsername(), 'Debora/Files/provaFile/file1.txt');
