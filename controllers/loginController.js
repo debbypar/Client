@@ -29,15 +29,15 @@ function loginFn(idUser, password) {
             console.log(err);
         }
         else if (res.body.status === "LOGIN_SUCCESS") {
-            console.log("Login success!");
+            console.log("Login success for "+idUser+"!");
         }
         else if(res.body.status === "WRONG_USER_ID")
         {
-            console.log("Wrong user id!");
+            console.log("User id "+idUser+" does not exist!");
         }
         else if(res.body.status === "WRONG_PASSWORD")
         {
-            console.log("Wrong password!");
+            console.log("Wrong password for "+idUser+"!");
         }
     });
 }

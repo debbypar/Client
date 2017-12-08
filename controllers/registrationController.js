@@ -5,7 +5,7 @@ var config = require('../config/config');
 exports.addUser = addUserFn;
 
 function addUserFn(idUser, password) {
-  //  console.log(idUser+"----"+password);
+    console.log("Request adding ("+idUser+", "+password+")");
 
     var obj = {
         url: 'http://' + config.balancerIp + ':' + config.balancerPort + '/api/lb/edge/registration',
@@ -25,6 +25,6 @@ function addUserFn(idUser, password) {
             console.log("Registration success!");
         }
         else if(res.body.status === 'USER_ID_EXISTS')
-            console.log("Id User already exists!");
+            console.log("Id User "+idUser+" already exists!");
     });
 }

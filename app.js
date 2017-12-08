@@ -110,7 +110,10 @@ setTimeout(uploadFileController.startUpload, 127000, '/opt/project/Files/file5.t
 setTimeout(deleteFileController.startDelete, 14000, profile.getProfileUsername(), 'Debora/Files/provaFile/file1.txt');
 */
 
-//registrationController.addUser('Cacchio', 'cacchioPass');
-//loginController.login('mamma', 'ciaoPass');
+registrationController.addUser('Debora', 'Deb');
 
-loginController.login('Debora', 'deb');
+loginController.login('Debora', 'ciao');
+
+
+
+//loginController.login('Debora', 'deb');
