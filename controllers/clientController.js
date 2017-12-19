@@ -19,7 +19,7 @@ function getMasterFn(){
     };
 
     var res = syncRequest('GET', obj.url);
-    master.setMasterServerIp(res.getBody('utf8'));  // utf8 convert body from buffer to string
+    master.setMasterServerIp(JSON.parse(res.getBody('utf8')).masterIp);  // utf8 convert body from buffer to string
 }
 
 function createProfileFn(username, password) {

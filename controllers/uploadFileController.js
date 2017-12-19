@@ -3,9 +3,9 @@ var request = require('request');
 var profile = require('../model/profile');
 var config = require('../config/config');
 var master = require('../model/masterServer');
-
+var syncRequest = require("sync-request");
 var FormData = require('form-data');
-
+var timer = require('../model/test');
 
 var path = require('path');
 var fs = require('fs');
@@ -27,6 +27,7 @@ exports.sendOneFile = sendOneFileFn;
 exports.sendGuidUserToSlaves = sendGuidUserToSlavesFn;
 exports.getFileData = getFileDataFn;
 exports.startUpload = startUploadFn;
+exports.startSyncUpload = startSyncUploadFn;
 
 
 /**
@@ -198,6 +199,8 @@ function sendGuidUserToSlavesFn(req, res) {
                }
            };
 
+
+
            //Sending guid-idClient to slaves
            request(objGuidUser, function (err, res) {
                if (err) {
@@ -239,7 +242,7 @@ function getFilesAndUploadFn(startPath) {
  * @param ipServer - The ip server I want to send the file
  * @param guid - The GUID that identifies the file.
  */
-function sendOneFileFn(origAbsPath, destRelPath, ipServer, guid) {
+function sendOneFileFn(origAbsPath, destRelPath, ipServer, guid, start) {
     console.log("->  Sending "+path.relative(process.cwd(),origAbsPath)+" to "+ipServer+'\n');
     var formData = {
         guid: guid,
@@ -247,7 +250,7 @@ function sendOneFileFn(origAbsPath, destRelPath, ipServer, guid) {
         destRelPath: destRelPath,
         my_file: fs.createReadStream(origAbsPath)
     };
-
+    var start = process.hrtime();
     request.post({url:'http://'+ipServer+':6601/api/chunk/newChunk', formData: formData}, function optionalCallback(err, res) {
         if (err) {
             return console.error('upload failed:', err);
@@ -257,7 +260,11 @@ function sendOneFileFn(origAbsPath, destRelPath, ipServer, guid) {
             var jsonRes = JSON.parse(res.body);
             if(jsonRes.type === 'FILE_SAVED_SUCCESS')
             {
-                console.log("Uploading "+jsonRes.nameFile+" SUCCESS!!!!!\n");
+                var precision = 3; // 3 decimal places
+                var elapsed = process.hrtime(start)[1] / 1000000; // divide by a million to get nano to milli
+                var time = elapsed.toFixed(precision); // print message + time
+                timer.pushFileTime(time);
+                // console.log("Uploading "+jsonRes.nameFile+" SUCCESS!!!!!\n");
             }
         }
     });
@@ -270,6 +277,7 @@ function savedSuccessFn(req, res) {
     res.send({status: 'ACK'});
 }*/
 
+
 /**
  * The client collects data from selected file.
  * @param fileAbsPath
@@ -277,6 +285,7 @@ function savedSuccessFn(req, res) {
  */
 function getFileDataFn(fileAbsPath) {
 
+    console.log(fileAbsPath);
     if (!fs.existsSync(fileAbsPath, 'utf8')) {
         console.log("no file ", fileAbsPath);
         return;
@@ -311,6 +320,7 @@ function startUploadFn(fileAbsPath, destRelPath) {
     console.log("I wants to upload the file "+fileData.absPath+" in "+destRelPath+'\n');
     console.log("->  Sending metadata to server.");
 
+    var start = process.hrtime();
     var obj = {
         url: 'http://' + master.getMasterServerIp() + ':6601/api/master/newFileData',
         method: 'POST',
@@ -319,12 +329,13 @@ function startUploadFn(fileAbsPath, destRelPath) {
             fileName: fileData.name,
             origAbsPath: fileData.absPath,
             destRelPath: destRelPath,
-            extension: fileData.extension,
+            extension: "undefined",
             sizeFile: fileData.sizeFile,
             idUser: fileData.idUser,
             lastModified: fileData.lastModified
         }
     };
+
 
     console.log("Master: "+obj.url);
 
@@ -355,10 +366,75 @@ function startUploadFn(fileAbsPath, destRelPath) {
                     }
                     if (res.body.type === 'ACK_PENDING') {
                         console.log("<-  Received ack to upload file from "+ip);
-                        sendOneFileFn(fileAbsPath, destRelPath, ip, guid);
+
+                        sendOneFileFn(fileAbsPath, destRelPath, ip, guid,start);
                     }
                 });
             });
         }
     });
 }
+
+
+function startSyncUploadFn(fileAbsPath, destRelPath) {
+    var fileData = getFileDataFn(fileAbsPath);
+    console.log("I wants to upload the file "+fileData.absPath+" in "+destRelPath+'\n');
+    console.log("->  Sending metadata to server.");
+    var start = process.hrtime();
+
+    var obj = {
+        url: 'http://' + master.getMasterServerIp() + ':6601/api/master/newFileData',
+        method: 'POST',
+        json: {
+            type: "METADATA",
+            fileName: fileData.name,
+            origAbsPath: fileData.absPath,
+            destRelPath: destRelPath,
+            extension: fileData.extension,
+            sizeFile: fileData.sizeFile,
+            idUser: fileData.idUser,
+            lastModified: fileData.lastModified
+        }
+    };
+
+    console.log("Master: "+obj.url);
+
+    var res = syncRequest(obj.method, obj.url, {
+        json: obj.json
+    });
+    res = JSON.parse(res.getBody('utf8'));
+    if(res.type === 'UPINFO') {
+            var guid = res.guid;
+
+            res.ipSlaves.forEach(function (ip) {
+                console.log("->  Sending (" + guid + " - " + profile.getProfileUsername() + ") to " + ip);
+                var objGuidUser = {
+                    url: 'http://' + ip + ':6601/api/chunk/newChunkGuidClient',
+                    method: 'POST',
+                    json: {
+                        type: "GUID_CLIENT",
+                        guid: guid,
+                        idUser: profile.getProfileUsername()
+                    }
+                };
+
+
+                var res2 = syncRequest(objGuidUser.method, objGuidUser.url, {
+                    json: objGuidUser.json
+                });
+                res2 = JSON.parse(res2.getBody('utf8'));
+
+                    if (res2.type === 'ACK_PENDING') {
+                        console.log("<-  Received ack to upload file from "+ip);
+                        var precision = 3; // 3 decimal places
+                        var elapsed = process.hrtime(start)[1] / 1000000; // divide by a million to get nano to milli
+                        var time = elapsed.toFixed(precision); // print message + time
+                        timer.pushTime(time);
+                        sendOneFileFn(fileAbsPath, destRelPath, ip, guid);
+                    }
+                });
+
+        }
+
+}
+
