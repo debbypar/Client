@@ -280,7 +280,6 @@ function savedSuccessFn(req, res) {
  */
 function getFileDataFn(fileAbsPath) {
 
-    console.log(fileAbsPath);
     if (!fs.existsSync(fileAbsPath, 'utf8')) {
         console.log("no file ", fileAbsPath);
         return;
