@@ -99,6 +99,7 @@ function testReadFileFn(nfiles)
             var h;
             var j;
             for(h=0;h<nfiles;h++) {
+                console.log(h);
                 j = casual.integer(from = 0, to = total - 1);
                 readFile(guids[j].guid, guids[j].path);
             }
