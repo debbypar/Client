@@ -21,8 +21,8 @@ function pushTimeFn(time)
 {
     timer.phase1.push(time);
     console.log(timer.phase1.length);
-    if(timer.phase1.length >= max)
-    {
+    // if(timer.phase1.length >= max)
+    // {
         timer.phase1Mean = math.mean(timer.phase1);
         // console.log(timer);
         fs.writeFile("./Files/RisultatiTest/readTest" + max,
@@ -37,6 +37,6 @@ function pushTimeFn(time)
             });
 
 
-    }
+    // }
 
 }
