@@ -28,14 +28,21 @@ app.use(express.static(__dirname + '/public'));
 var clientController = require('./controllers/clientController');
 var uploadFileController = require('./controllers/uploadFileController');
 var testController = require('./controllers/testController');
-
+var readFileController = require("./controllers/readFileController");
 require('./routes/clientRoute')(app);
 
 
 clientController.createProfile("zippo", "zippo");
 clientController.getMaster();
 
+if(process.argv[2] === "create")
+    testController.createCasualFile(process.argv[3]);
 
-testController.testSendFile();
+if(process.argv[2] === "send")
+    testController.testSendFile(process.argv[3]);
 
+if(process.argv[2] === "syncSend")
+    testController.testSendFileSync(process.argv[3]);
 
+if(process.argv[2] === "read")
+    testController.testReadFile(100);

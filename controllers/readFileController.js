@@ -8,7 +8,7 @@ function getDirectoryTreeFn(username) {
     console.log("Connecting master...");
 
     var data = {
-        url: 'http://10.0.75.1:6601/api/master/getDirectoryTree',
+        url: 'http://'+ master.getMasterServerIp()+':6601/api/master/getDirectoryTree',
         method: 'POST',
         json: {
             username: username

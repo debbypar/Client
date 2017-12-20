@@ -5,7 +5,7 @@ var config = require('../config/config');
 var master = require('../model/masterServer');
 var syncRequest = require("sync-request");
 var FormData = require('form-data');
-var timer = require('../model/test');
+var timer = require('../model/uploadTest');
 
 var path = require('path');
 var fs = require('fs');
@@ -366,7 +366,10 @@ function startUploadFn(fileAbsPath, destRelPath) {
                     }
                     if (res.body.type === 'ACK_PENDING') {
                         console.log("<-  Received ack to upload file from "+ip);
-
+                        var precision = 3; // 3 decimal places
+                        var elapsed = process.hrtime(start)[1] / 1000000; // divide by a million to get nano to milli
+                        var time = elapsed.toFixed(precision); // print message + time
+                        timer.pushTime(time);
                         sendOneFileFn(fileAbsPath, destRelPath, ip, guid,start);
                     }
                 });
