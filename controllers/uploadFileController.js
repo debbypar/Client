@@ -317,9 +317,6 @@ function getFileDataFn(fileAbsPath) {
  */
 function startUploadFn(fileAbsPath, destRelPath) {
     var fileData = getFileDataFn(fileAbsPath);
-    console.log("I wants to upload the file "+fileData.absPath+" in "+destRelPath+'\n');
-    console.log("->  Sending metadata to server.");
-
     var start = process.hrtime();
     var obj = {
         url: 'http://' + master.getMasterServerIp() + ':6601/api/master/newFileData',
@@ -365,7 +362,6 @@ function startUploadFn(fileAbsPath, destRelPath) {
                         console.log(err);
                     }
                     if (res.body.type === 'ACK_PENDING') {
-                        console.log("<-  Received ack to upload file from "+ip);
                         var precision = 3; // 3 decimal places
                         var elapsed = process.hrtime(start)[1] / 1000000; // divide by a million to get nano to milli
                         var time = elapsed.toFixed(precision); // print message + time
@@ -381,8 +377,6 @@ function startUploadFn(fileAbsPath, destRelPath) {
 
 function startSyncUploadFn(fileAbsPath, destRelPath) {
     var fileData = getFileDataFn(fileAbsPath);
-    console.log("I wants to upload the file "+fileData.absPath+" in "+destRelPath+'\n');
-    console.log("->  Sending metadata to server.");
     var start = process.hrtime();
 
     var obj = {
@@ -399,9 +393,6 @@ function startSyncUploadFn(fileAbsPath, destRelPath) {
             lastModified: fileData.lastModified
         }
     };
-
-    console.log("Master: "+obj.url);
-
     var res = syncRequest(obj.method, obj.url, {
         json: obj.json
     });
@@ -410,7 +401,6 @@ function startSyncUploadFn(fileAbsPath, destRelPath) {
             var guid = res.guid;
 
             res.ipSlaves.forEach(function (ip) {
-                console.log("->  Sending (" + guid + " - " + profile.getProfileUsername() + ") to " + ip);
                 var objGuidUser = {
                     url: 'http://' + ip + ':6601/api/chunk/newChunkGuidClient',
                     method: 'POST',
