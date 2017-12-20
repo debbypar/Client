@@ -22,7 +22,7 @@ function pushTimeFn(time)
     timer.phase1.push(time);
     console.log(timer.phase1.length);
     console.log(max);
-    if(timer.phase1.length === max)
+    if(timer.phase1.length >= max)
     {
         console.log("DIO STRONZO");
         timer.phase1Mean = math.mean(timer.phase1);
