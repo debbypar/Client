@@ -45,4 +45,4 @@ if(process.argv[2] === "syncSend")
     testController.testSendFileSync(process.argv[3]);
 
 if(process.argv[2] === "read")
-    testController.testReadFile(100);
+    testController.testReadFile(process.argv[3]);
