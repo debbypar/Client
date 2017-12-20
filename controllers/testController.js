@@ -98,8 +98,8 @@ function testReadFileFn(nfiles)
             var total = guids.length;
             var h;
             var j;
+            console.log(total);
             for(h=0;h<nfiles;h++) {
-                console.log(h);
                 j = casual.integer(from = 0, to = total - 1);
                 readFile(guids[j].guid, guids[j].path);
             }
@@ -175,7 +175,7 @@ function readFile(guid,path,nfiles) {
                     var elapsed = process.hrtime(start)[1] / 1000000; // divide by a million to get nano to milli
                     var time = elapsed.toFixed(precision);
                     timer.pushTime(time);
-                    // console.log(response2.body);
+                    console.log(response2.body);
                    // res.send(response2.body);
                 }
             });
