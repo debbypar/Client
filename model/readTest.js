@@ -20,6 +20,7 @@ function setLengthFn(i)
 function pushTimeFn(time)
 {
     timer.phase1.push(time);
+    console.log(timer.phase1.length);
     if(timer.phase1.length === max)
     {
         timer.phase1Mean = math.mean(timer.phase1);

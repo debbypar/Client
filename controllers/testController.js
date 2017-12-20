@@ -175,7 +175,6 @@ function readFile(guid,path,nfiles) {
                     var elapsed = process.hrtime(start)[1] / 1000000; // divide by a million to get nano to milli
                     var time = elapsed.toFixed(precision);
                     timer.pushTime(time);
-                    console.log(response2.body);
                    // res.send(response2.body);
                 }
             });
