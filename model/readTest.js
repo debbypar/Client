@@ -20,11 +20,11 @@ function setLengthFn(i)
 function pushTimeFn(time)
 {
     timer.phase1.push(time);
-    console.log(time.phase1.length);
+    console.log(timer.phase1.length);
     console.log(max);
     if(timer.phase1.length === max)
     {
-        console.log("PORCODIO");
+        console.log("DIO STRONZO");
         timer.phase1Mean = math.mean(timer.phase1);
         // console.log(timer);
         fs.writeFile("./Files/RisultatiTest/readTest" + max,
