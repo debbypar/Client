@@ -151,8 +151,6 @@ function getRandomFileFromDirFn(startPath) {
  * @param chosenFileData
  */
 function startUploadReqFn(chosenFileData) {
-    console.log("I wants to upload the file "+chosenFileData.startPath+chosenFileData.name+'\n');
-    console.log("->  Sending metadata to server.");
 
     var obj = {
         url: 'http://' + master.getMasterServerIp() + ':6601/api/master/newFileData',
@@ -188,7 +186,6 @@ function sendGuidUserToSlavesFn(req, res) {
    if(req.body.type == 'UPINFO') {
        var guid = req.body.guid;
 
-           console.log("->  Sending (" + guid + " - " + profile.getProfileUsername() + ") to " + req.body.ipSlave);
            var objGuidUser = {
                url: 'http://' + req.body.ipSlave + ':6601/api/chunk/newChunkGuidClient',
                method: 'POST',
@@ -207,7 +204,6 @@ function sendGuidUserToSlavesFn(req, res) {
                    console.log(err);
                }
                if (res.body.type == 'ACK_PENDING') {
-                   console.log("<-  Received ack to upload file from "+req.body.ipSlave);
                    sendOneFileFn(req.body.origPath, req.body.destPath, req.body.ipSlave, guid);
                }
            });
@@ -243,7 +239,6 @@ function getFilesAndUploadFn(startPath) {
  * @param guid - The GUID that identifies the file.
  */
 function sendOneFileFn(origAbsPath, destRelPath, ipServer, guid, start) {
-    console.log("->  Sending "+path.relative(process.cwd(),origAbsPath)+" to "+ipServer+'\n');
     var formData = {
         guid: guid,
         idUser: profile.getProfileUsername(),
@@ -334,8 +329,6 @@ function startUploadFn(fileAbsPath, destRelPath) {
     };
 
 
-    console.log("Master: "+obj.url);
-
     request(obj, function (err, res) {
         if (err) {
             console.log(err);
@@ -345,7 +338,6 @@ function startUploadFn(fileAbsPath, destRelPath) {
             var guid = res.body.guid;
 
             res.body.ipSlaves.forEach(function (ip) {
-                console.log("->  Sending (" + guid + " - " + profile.getProfileUsername() + ") to " + ip);
                 var objGuidUser = {
                     url: 'http://' + ip + ':6601/api/chunk/newChunkGuidClient',
                     method: 'POST',
@@ -418,7 +410,6 @@ function startSyncUploadFn(fileAbsPath, destRelPath) {
                 res2 = JSON.parse(res2.getBody('utf8'));
 
                     if (res2.type === 'ACK_PENDING') {
-                        console.log("<-  Received ack to upload file from "+ip);
                         var precision = 3; // 3 decimal places
                         var elapsed = process.hrtime(start)[1] / 1000000; // divide by a million to get nano to milli
                         var time = elapsed.toFixed(precision); // print message + time
