@@ -23,7 +23,7 @@ function setLengthFn(i)
 function pushTimeFn(time)
 {
     timer.phase1.push(time);
-    if(timer.phase1.length === max*3)
+    if(timer.phase1.length >= max*2.5)
     {
         timer.phase1Mean = math.mean(timer.phase1);
         // console.log(timer);
@@ -35,7 +35,8 @@ function pushTimeFn(time)
 function pushFileTimeFn(time)
 {
     timer.phase2.push(time);
-    if(timer.phase2.length === max*3)
+    console.log(timer.phase2.length);
+    if(timer.phase2.length >= max*2.5)
     {
         timer.phase2Mean = math.mean(timer.phase2);
         fs.writeFile("./Files/RisultatiTest/uploadTest" + max,
